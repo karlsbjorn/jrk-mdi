@@ -21,7 +21,7 @@ TEAMS = [  # Tank, Healer, DPS, DPS, DPS
     ["Xcotli", "Winmeron", "Filezmaj", "Mageisback", "Uzgo"],
     ["Nayelli", "Medeni", "", "Drvoje", ""],
     ["Bonsaí", "Mylkan", "Retilol", "", ""],
-    ["Bloodykurton", "Tithral", "Mooasko", "", "Morganlefey"],
+    ["Bloodykurton", "Tithrál", "Mooasko", "", "Morganlefey"],
 ]
 
 
