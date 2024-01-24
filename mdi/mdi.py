@@ -142,10 +142,11 @@ class MDI(commands.Cog):
 
         return discord.File(fp=img_obj, filename="scoreboard.png")
 
-    async def draw_team(self, draw, font, img, team, x, y):
+    async def draw_team(self, draw: ImageDraw, font, img, team, x, y):
         offset = 7
         for character in team:
             if character is None:
+                draw.text((x + 15, y - offset), "???", font=font)
                 y += 113
                 continue
 
@@ -158,8 +159,8 @@ class MDI(commands.Cog):
             draw.text((x + 15, y - offset), character.name, character.get_class_color(), font=font)
             draw.text(
                 (x + 375, y - offset),
-                f"ilvl {str(round(character.item_level))}",
-                (255, 0, 0) if character.item_level >= 470 else (0, 255, 0),
+                f"{str(round(character.item_level))}",
+                self._get_ilvl_color(character.item_level),
                 font=font,
             )
             draw.text((x + 540, y - offset), str(int(character.score)), character.color, font=font)
@@ -221,3 +222,7 @@ class MDI(commands.Cog):
                 await mdi_msg.edit(embed=embed, attachments=[img_file])
             except discord.HTTPException:
                 log.error(f"Failed to edit MDI scoreboard message in {guild} ({guild.id}).")
+
+    def cog_unload(self):
+        self.bot.loop.create_task(self.session.close())
+        self.update_mdi_scoreboard.stop()
