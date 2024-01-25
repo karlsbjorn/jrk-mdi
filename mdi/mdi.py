@@ -20,8 +20,8 @@ _ = Translator("MDI", __file__)
 TEAMS = [  # Tank, Healer, DPS, DPS, DPS
     ["Xcotli", "Winmeron", "Filezmaj", "Mageisback", "Uzgo"],
     ["Nayelli", "Medeni", "Himen", "Drvoje", ""],
-    ["Bonsaí", "Mylkan", "Retilol", "", ""],
-    ["Bloodykurton", "Tithrál", "Mooasko", "", "Morganlefey"],
+    ["Bonsaí", "Mylkan", "Retilol", "Djosa", ""],
+    ["Bloodykurton", "Tithrál", "Mooasko", "Sljivah", "Morganlefey"],
 ]
 
 
