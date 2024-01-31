@@ -19,7 +19,7 @@ _ = Translator("MDI", __file__)
 
 TEAMS = [  # Tank, Healer, DPS, DPS, DPS
     ["Xcotli", "Winmeron", "Filezmaj", "Mageisback", "Uzgo"],
-    ["Nayelli", "Medeni", "Himen", "Drvoje", ""],
+    ["Nayelli", "Medeni", "Himen", "Drvoje", "Tymyfanz"],
     ["Bonsaí", "Mylkan", "Retilol", "Djosa", ""],
     ["Bloodykurton", "Tithrál", "Mooasko", "Sljivah", "Morganlefey"],
 ]
@@ -211,7 +211,7 @@ class MDI(commands.Cog):
             embed.set_author(name=guild.name, icon_url=guild.icon.url)
 
             desc = f"Zadnji put ažurirano <t:{int(datetime.now(timezone.utc).timestamp())}:R>\n"
-            # desc += "Prvi dan MDI-a počinje <t:1675882800:R>\n"
+            desc += "Prvi dan MDI-a počinje <t:1708543800:R>\n"
 
             img_file = await self._generate_mdi_image()
             embed.set_image(url=f"attachment://{img_file.filename}")
