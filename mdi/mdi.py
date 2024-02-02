@@ -223,6 +223,10 @@ class MDI(commands.Cog):
             except discord.HTTPException:
                 log.error(f"Failed to edit MDI scoreboard message in {guild} ({guild.id}).")
 
+    @update_mdi_scoreboard.error
+    async def update_mdi_scoreboard_error(self, error):
+        log.error(f"Unhandled exception in update_mdi_scoreboard task: {error}", exc_info=True)
+
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
         self.update_mdi_scoreboard.stop()
