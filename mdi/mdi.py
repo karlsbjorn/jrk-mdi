@@ -148,8 +148,8 @@ class MDI(commands.Cog):
         y,
     ):
         offset = 7
-        draw.text((x + 375, y - offset + 113), self.get_team_avg_ilvl(team))
-        draw.text((x + 540, y - offset + 113), self.get_team_avg_score(team))
+        draw.text((x + 375, y - offset + 113), str(self.get_team_avg_ilvl(team)))
+        draw.text((x + 540, y - offset + 113), str(self.get_team_avg_score(team)))
         for character in team:
             if character is None:
                 draw.text((x + 15, y - offset), "???", font=font)
@@ -178,7 +178,7 @@ class MDI(commands.Cog):
         return sum(ilvls) // len(ilvls)
 
     @staticmethod
-    def get_team_avg_score(team: list[Optional[ParticipantCharacter]]):
+    def get_team_avg_score(team: list[Optional[ParticipantCharacter]]) -> int:
         scores = [character.score for character in team if character]
         return sum(scores) // len(scores)
 
