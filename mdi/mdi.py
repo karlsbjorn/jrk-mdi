@@ -5,6 +5,7 @@ from typing import Optional
 
 import aiohttp
 import discord
+from PIL.ImageFont import FreeTypeFont
 from discord.ext import tasks
 from PIL import Image, ImageDraw, ImageFont
 from redbot.core import Config, commands
@@ -111,30 +112,25 @@ class MDI(commands.Cog):
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(str(bundled_data_path(self) / "Roboto-Bold.ttf"), 40)
 
+        # Team 1
         x = 194
         y = 275
-
-        # Team 1
-        team1 = team_data[0]
-        await self.draw_team(draw, font, img, team1, x, y)
+        await self.draw_team(draw, font, img, team_data[0], x, y)
 
         # Team 2
-        team2 = team_data[1]
         x = 1235
         y = 275
-        await self.draw_team(draw, font, img, team2, x, y)
+        await self.draw_team(draw, font, img, team_data[1], x, y)
 
         # Team 3
-        team3 = team_data[2]
         x = 194
         y = 953
-        await self.draw_team(draw, font, img, team3, x, y)
+        await self.draw_team(draw, font, img, team_data[2], x, y)
 
         # Team 4
-        team4 = team_data[3]
         x = 1235
         y = 953
-        await self.draw_team(draw, font, img, team4, x, y)
+        await self.draw_team(draw, font, img, team_data[3], x, y)
 
         img_obj = io.BytesIO()
         img.save(img_obj, format="PNG")
@@ -142,8 +138,18 @@ class MDI(commands.Cog):
 
         return discord.File(fp=img_obj, filename="scoreboard.png")
 
-    async def draw_team(self, draw: ImageDraw, font, img, team, x, y):
+    async def draw_team(
+        self,
+        draw: ImageDraw,
+        font: FreeTypeFont,
+        img,
+        team: list[Optional[ParticipantCharacter]],
+        x,
+        y,
+    ):
         offset = 7
+        draw.text((x + 375, y - offset + 113), self.get_team_avg_ilvl(team))
+        draw.text((x + 540, y - offset + 113), self.get_team_avg_score(team))
         for character in team:
             if character is None:
                 draw.text((x + 15, y - offset), "???", font=font)
@@ -165,6 +171,16 @@ class MDI(commands.Cog):
             )
             draw.text((x + 540, y - offset), str(int(character.score)), character.color, font=font)
             y += 113
+
+    @staticmethod
+    def get_team_avg_ilvl(team: list[Optional[ParticipantCharacter]]) -> int:
+        ilvls = [character.item_level for character in team if character]
+        return sum(ilvls) // len(ilvls)
+
+    @staticmethod
+    def get_team_avg_score(team: list[Optional[ParticipantCharacter]]):
+        scores = [character.score for character in team if character]
+        return sum(scores) // len(scores)
 
     @staticmethod
     def _get_ilvl_color(ilvl: int) -> str:
