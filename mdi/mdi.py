@@ -148,8 +148,8 @@ class MDI(commands.Cog):
         y,
     ):
         offset = 7
-        draw.text((x + 375, y - offset + 113), str(self.get_team_avg_ilvl(team)))
-        draw.text((x + 540, y - offset + 113), str(self.get_team_avg_score(team)))
+        draw.text((x + 375, y - offset - 113), str(self.get_team_avg_ilvl(team)), font=font)
+        draw.text((x + 540, y - offset - 113), str(self.get_team_avg_score(team)), font=font)
         for character in team:
             if character is None:
                 draw.text((x + 15, y - offset), "???", font=font)
