@@ -1,17 +1,19 @@
 import io
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+from typing import List, Optional
 
 import aiohttp
 import discord
-from PIL.ImageFont import FreeTypeFont
 from discord.ext import tasks
 from PIL import Image, ImageDraw, ImageFont
+from PIL.ImageFont import FreeTypeFont
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import bundled_data_path
 from redbot.core.i18n import Translator, set_contextual_locales_from_guild
+from redbot.core.utils.chat_formatting import box
+from tabulate import tabulate
 
 from mdi.participant_character import ParticipantCharacter
 
@@ -31,11 +33,18 @@ class MDI(commands.Cog):
         self.bot: Red = bot
         self.config = Config.get_conf(self, identifier=87446677010550784)
 
-        default_guild = {"mdi_channel": None, "mdi_message": None}
+        default_guild = {
+            "mdi_channel": None,
+            "mdi_message": None,
+            "signups": [],
+            "signupsboard_channel": 0,
+            "signupsboard_message": 0,
+        }
         self.config.register_guild(**default_guild)
 
         self.session = aiohttp.ClientSession(headers={"User-Agent": "Red-DiscordBot/WoWToolsCog"})
         self.update_mdi_scoreboard.start()
+        self.update_signups_board.start()
 
     @commands.group()
     @commands.admin()
@@ -44,10 +53,70 @@ class MDI(commands.Cog):
         """MDI postavke."""
         pass
 
-    @mdiset.command(name="channel")
+    @mdiset.command(name="setsignups")
     @commands.admin()
     @commands.guild_only()
-    async def mdiset_channel(self, ctx: commands.Context, channel: discord.TextChannel = None):
+    async def mdiset_setsignups(self, ctx: commands.Context, signups: str):
+        signups_list = signups.split(sep=",")
+        await self.config.guild(ctx.guild).signups.set(signups_list)
+        await ctx.tick()
+
+    @mdiset.command(name="signupsboard")
+    @commands.admin()
+    @commands.guild_only()
+    async def mdiset_signupsboard(
+        self, ctx: commands.Context, channel: Optional[discord.TextChannel] = None
+    ):
+        guild: discord.Guild = ctx.guild  # type: ignore
+        signups_channel: int = await self.config.guild(guild).signupsboard_channel()
+        signups_message: int = await self.config.guild(guild).signupsboard_message()
+        if not channel:
+            if signups_channel:
+                await self._delete_scoreboard(
+                    ctx,
+                    signups_channel,
+                    signups_message,
+                )
+            await self.config.guild(guild).mdi_channel.clear()
+            await self.config.guild(guild).mdi_message.clear()
+            await ctx.send(_("Signups message cleared."))
+            return
+        if signups_message:
+            await self._delete_scoreboard(
+                ctx,
+                signups_channel,
+                signups_message,
+            )
+        await self.config.guild(guild).signupsboard_channel.set(channel.id)
+        embed: discord.Embed = await self._generate_signups_embed(guild, await ctx.embed_colour())
+        msg = await channel.send(embed=embed)
+        await self.config.guild(guild).signupsboard_message.set(msg.id)
+        await ctx.tick()
+
+    async def _generate_signups_embed(
+        self, guild: discord.Guild, color: discord.Color
+    ) -> discord.Embed:
+        signups: List[str] = await self.config.guild(guild).signups()
+        characters: List[ParticipantCharacter] = [
+            await ParticipantCharacter.create(player) for player in signups
+        ]
+        headers = ["# Ime", "Klasa", "Ilvl", "M+ Score"]
+        rows: List[List[str]] = [character.to_row() for character in characters]
+        table = tabulate(rows, headers=headers, tablefmt="plain", disable_numparse=True)
+        desc = "Draft je <t:1731524400:R>\nMDI počinje <t:1732734000:R>\n"
+        desc += box(table, lang="md")
+        desc += f"\nZadnji put ažurirano <t:{int(datetime.now(timezone.utc).timestamp())}:R>"
+        embed = discord.Embed(color=color, title="6. MDI Prijave", description=desc)
+        # embed.set_thumbnail(url="https://i.imgur.com/pTFypf6.png")
+        embed.set_footer(text="Ažurira se svakih 30 minuta")
+        return embed
+
+    @mdiset.command(name="scoreboard")
+    @commands.admin()
+    @commands.guild_only()
+    async def mdiset_scoreboard(
+        self, ctx: commands.Context, channel: Optional[discord.TextChannel] = None
+    ):
         """Postavi kanal za MDI ljestvicu."""
         mdi_channel_id: int = await self.config.guild(ctx.guild).mdi_channel()
         mdi_msg_id: int = await self.config.guild(ctx.guild).mdi_message()
@@ -140,12 +209,12 @@ class MDI(commands.Cog):
 
     async def draw_team(
         self,
-        draw: ImageDraw,
+        draw: ImageDraw.ImageDraw,
         font: FreeTypeFont,
         img,
         team: list[Optional[ParticipantCharacter]],
-        x,
-        y,
+        x: int,
+        y: int,
     ):
         offset = 7
         draw.text((x + 375, y - offset - 100), str(self.get_team_avg_ilvl(team)), font=font)
@@ -239,6 +308,28 @@ class MDI(commands.Cog):
             except discord.HTTPException:
                 log.error(f"Failed to edit MDI scoreboard message in {guild} ({guild.id}).")
 
+    @tasks.loop(minutes=30)
+    async def update_signups_board(self):
+        for guild in self.bot.guilds:
+            if await self.bot.cog_disabled_in_guild(self, guild):
+                continue
+            await set_contextual_locales_from_guild(self.bot, guild)
+            signups_channel_id: int = await self.config.guild(guild).signupsboard_channel()
+            signups_message_id: int = await self.config.guild(guild).signupsboard_message()
+
+            signups_channel = self.bot.get_channel(signups_channel_id)
+            if not signups_channel:
+                continue
+            signups_message = await signups_channel.fetch_message(signups_message_id)
+
+            embed: discord.Embed = await self._generate_signups_embed(
+                guild, await self.bot.get_embed_color(signups_message)
+            )
+            try:
+                await signups_message.edit(embed=embed)
+            except discord.HTTPException:
+                log.error(f"Failed to edit signups message in {guild} ({guild.id}).")
+
     @update_mdi_scoreboard.error
     async def update_mdi_scoreboard_error(self, error):
         log.error(f"Unhandled exception in update_mdi_scoreboard task: {error}", exc_info=True)
@@ -246,3 +337,4 @@ class MDI(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
         self.update_mdi_scoreboard.stop()
+        self.update_signups_board.stop()

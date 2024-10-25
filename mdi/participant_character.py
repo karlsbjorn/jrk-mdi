@@ -17,13 +17,19 @@ class ParticipantCharacter:
 
         async with RaiderIO() as rio:
             player_data = await rio.get_character_profile(
-                "eu", "ragnaros", name, ["gear", "mythic_plus_scores_by_season:current"]
+                "eu",
+                "ragnaros" if "-" not in name else "-".join(name.split("-")[1:]),
+                name,
+                ["gear", "mythic_plus_scores_by_season:current"],
             )
-        self.thumbnail_url = player_data["thumbnail_url"]
-        self.item_level = player_data["gear"]["item_level_equipped"]
-        self.score = player_data["mythic_plus_scores_by_season"][0]["segments"]["all"]["score"]
-        self.color = player_data["mythic_plus_scores_by_season"][0]["segments"]["all"]["color"]
-        self.player_class = player_data["class"]
+        try:
+            self.thumbnail_url = player_data["thumbnail_url"]
+            self.item_level = player_data["gear"]["item_level_equipped"]
+            self.score = player_data["mythic_plus_scores_by_season"][0]["segments"]["all"]["score"]
+            self.color = player_data["mythic_plus_scores_by_season"][0]["segments"]["all"]["color"]
+            self.player_class = player_data["class"]
+        except KeyError:
+            return self
 
         return self
 
@@ -43,3 +49,11 @@ class ParticipantCharacter:
             "WARRIOR": "#C79C6E",
             "EVOKER": "#1F594D",
         }[self.player_class.upper()]
+
+    def to_row(self):
+        return [
+            self.name.split("-")[0],
+            self.player_class,
+            round(self.item_level, 1),
+            round(self.score, 1),
+        ]
