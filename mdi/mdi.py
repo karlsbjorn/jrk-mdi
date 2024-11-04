@@ -100,7 +100,7 @@ class MDI(commands.Cog):
         characters: List[ParticipantCharacter] = [
             await ParticipantCharacter.create(player) for player in signups
         ]
-        headers = ["# Ime", "Klasa", "Ilvl", "M+ Score"]
+        headers = ["# Ime", "Klasa", "Ilvl", "Score"]
         rows: List[List[str]] = [character.to_row() for character in characters]
         table = tabulate(rows, headers=headers, tablefmt="plain", disable_numparse=True)
         desc = "Draft je <t:1731524400:R>\nMDI počinje <t:1732734000:R>\n"
@@ -336,5 +336,5 @@ class MDI(commands.Cog):
 
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
-        self.update_mdi_scoreboard.stop()
-        self.update_signups_board.stop()
+        self.update_mdi_scoreboard.cancel()
+        self.update_signups_board.cancel()

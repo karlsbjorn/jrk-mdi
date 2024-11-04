@@ -19,7 +19,7 @@ class ParticipantCharacter:
             player_data = await rio.get_character_profile(
                 "eu",
                 "ragnaros" if "-" not in name else "-".join(name.split("-")[1:]),
-                name,
+                name.split("-")[0],
                 ["gear", "mythic_plus_scores_by_season:current"],
             )
         try:
@@ -54,6 +54,6 @@ class ParticipantCharacter:
         return [
             self.name.split("-")[0],
             self.player_class,
-            round(self.item_level, 1),
-            round(self.score, 1),
+            f"{int(round(self.item_level, 0))}{'✔️' if self.item_level >= 610 else ''}",
+            int(self.score),
         ]
