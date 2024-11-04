@@ -1,4 +1,7 @@
 from raiderio_async import RaiderIO
+from redbot.core.bot import Red
+
+from aiowowapi import API, WowApi
 
 
 class ParticipantCharacter:
@@ -11,8 +14,8 @@ class ParticipantCharacter:
         self.player_class: str = ""
 
     @classmethod
-    async def create(cls, name: str):
-        self = ParticipantCharacter()
+    async def create(cls, name: str, wow_api):
+        self = cls()
         self.name = name
 
         async with RaiderIO() as rio:
@@ -20,11 +23,17 @@ class ParticipantCharacter:
                 "eu",
                 "ragnaros" if "-" not in name else "-".join(name.split("-")[1:]),
                 name.split("-")[0],
-                ["gear", "mythic_plus_scores_by_season:current"],
+                ["mythic_plus_scores_by_season:current"],
             )
+        blizz_profile = await wow_api.Retail.Profile.get_character_profile_summary(
+            "ragnaros" if "-" not in name else "-".join(name.split("-")[1:]).lower(),
+            name.split("-")[0].lower(),
+        )
+        player_ilvl: int = blizz_profile.get("equipped_item_level", 0)
+
         try:
             self.thumbnail_url = player_data["thumbnail_url"]
-            self.item_level = player_data["gear"]["item_level_equipped"]
+            self.item_level = player_ilvl
             self.score = player_data["mythic_plus_scores_by_season"][0]["segments"]["all"]["score"]
             self.color = player_data["mythic_plus_scores_by_season"][0]["segments"]["all"]["color"]
             self.player_class = player_data["class"]

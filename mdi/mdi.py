@@ -15,16 +15,17 @@ from redbot.core.i18n import Translator, set_contextual_locales_from_guild
 from redbot.core.utils.chat_formatting import box
 from tabulate import tabulate
 
+from aiowowapi import WowApi
 from mdi.participant_character import ParticipantCharacter
 
 log = logging.getLogger("red.karlo-cogs.wowtools")
 _ = Translator("MDI", __file__)
 
 TEAMS = [  # Tank, Healer, DPS, DPS, DPS
-    ["Xcotli", "Winmeron", "Filezmaj", "Mageisback", "Uzgo"],
-    ["Nayelli", "Medeni", "Himen", "Drvoje", "Tymyfanz"],
-    ["Bonsaí", "Mylkan", "Retilol", "Djosa", "Vortax"],
-    ["Bloodykurton", "Tithrál", "Mooasko", "Sljivah", "Morganlefey"],
+    # [],
+    # [],
+    # [],
+    # [],
 ]
 
 
@@ -97,9 +98,15 @@ class MDI(commands.Cog):
         self, guild: discord.Guild, color: discord.Color
     ) -> discord.Embed:
         signups: List[str] = await self.config.guild(guild).signups()
-        characters: List[ParticipantCharacter] = [
-            await ParticipantCharacter.create(player) for player in signups
-        ]
+
+        blizzard_api = await self.bot.get_shared_api_tokens("blizzard")
+        cid = blizzard_api.get("client_id")
+        secret = blizzard_api.get("client_secret")
+        api = WowApi(client_id=cid, client_secret=secret, client_region="eu")
+        async with api as wow:
+            characters: List[ParticipantCharacter] = [
+                await ParticipantCharacter.create(player, wow) for player in signups
+            ]
         headers = ["# Ime", "Klasa", "Ilvl", "Score"]
         rows: List[List[str]] = [character.to_row() for character in characters]
         table = tabulate(rows, headers=headers, tablefmt="plain", disable_numparse=True)
@@ -166,16 +173,21 @@ class MDI(commands.Cog):
 
     async def _generate_mdi_image(self):
         team_data: list[list[Optional[ParticipantCharacter]]] = [[], [], [], []]
-        for i, team in enumerate(TEAMS):
-            for player in team:
-                if player == "":
-                    team_data[i].append(None)
-                    continue
-                try:
-                    character = await ParticipantCharacter.create(player)
-                except KeyError:  # character doesn't exist yet?
-                    character = None
-                team_data[i].append(character)
+        blizzard_api = await self.bot.get_shared_api_tokens("blizzard")
+        cid = blizzard_api.get("client_id")
+        secret = blizzard_api.get("client_secret")
+        api = WowApi(client_id=cid, client_secret=secret, client_region="eu")
+        async with api as wow:
+            for i, team in enumerate(TEAMS):
+                for player in team:
+                    if player == "":
+                        team_data[i].append(None)
+                        continue
+                    try:
+                        character = await ParticipantCharacter.create(player, wow)
+                    except KeyError:  # character doesn't exist yet?
+                        character = None
+                    team_data[i].append(character)
 
         img = Image.open(bundled_data_path(self) / "mdi_scoreboard.png")
         draw = ImageDraw.Draw(img)
@@ -271,6 +283,8 @@ class MDI(commands.Cog):
     @tasks.loop(minutes=10)
     async def update_mdi_scoreboard(self):
         for guild in self.bot.guilds:
+            if not TEAMS:
+                return
             if await self.bot.cog_disabled_in_guild(self, guild):
                 continue
             await set_contextual_locales_from_guild(self.bot, guild)
