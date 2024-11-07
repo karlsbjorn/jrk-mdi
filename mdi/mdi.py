@@ -330,11 +330,21 @@ class MDI(commands.Cog):
             await set_contextual_locales_from_guild(self.bot, guild)
             signups_channel_id: int = await self.config.guild(guild).signupsboard_channel()
             signups_message_id: int = await self.config.guild(guild).signupsboard_message()
+            if not signups_message_id:
+                continue
 
             signups_channel = self.bot.get_channel(signups_channel_id)
             if not signups_channel:
                 continue
-            signups_message = await signups_channel.fetch_message(signups_message_id)
+            try:
+                signups_message = await signups_channel.fetch_message(signups_message_id)
+            except discord.errors.NotFound:
+                log.warning(
+                    f"Message {signups_message_id} not found in {signups_channel_id} ({guild.name})"
+                )
+                await self.config.guild(guild).signupsboard_channel.set(0)
+                await self.config.guild(guild).signupsboard_message.set(0)
+                continue
 
             embed: discord.Embed = await self._generate_signups_embed(
                 guild, await self.bot.get_embed_color(signups_message)
