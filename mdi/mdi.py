@@ -22,10 +22,11 @@ log = logging.getLogger("red.karlo-cogs.wowtools")
 _ = Translator("MDI", __file__)
 
 TEAMS = [  # Tank, Healer, DPS, DPS, DPS
-    # [],
-    # [],
-    # [],
-    # [],
+    ["Jegger", "Truljator", "Yeezus", "Wranjes-ravencrest", "Locketina"],
+    ["Ujoo", "Palciic", "Cokoladica", "Djubresa", "Shlogy-Kazzak"],
+    ["Guzdian", "Skusic-tarren-mill", "Thasko", "Riggmage", "Meinwille"],
+    ["Oguun", "Eihime-defias-brotherhood", "Vortas-Sylvanas", "Lanxy", "Veriel-tarren-mill"],
+    ["Iaretank", "Zugicokoloko", "Vrac", "Kruska", "Exorcist"],
 ]
 
 
@@ -172,7 +173,7 @@ class MDI(commands.Cog):
         return embed, img_file
 
     async def _generate_mdi_image(self):
-        team_data: list[list[Optional[ParticipantCharacter]]] = [[], [], [], []]
+        team_data: list[list[Optional[ParticipantCharacter]]] = [[], [], [], [], []]
         blizzard_api = await self.bot.get_shared_api_tokens("blizzard")
         cid = blizzard_api.get("client_id")
         secret = blizzard_api.get("client_secret")
@@ -213,6 +214,11 @@ class MDI(commands.Cog):
         y = 953
         await self.draw_team(draw, font, img, team_data[3], x, y)
 
+        # Team 5
+        x = 2175
+        y = 562
+        await self.draw_team(draw, font, img, team_data[4], x, y)
+
         img_obj = io.BytesIO()
         img.save(img_obj, format="PNG")
         img_obj.seek(0)
@@ -243,7 +249,12 @@ class MDI(commands.Cog):
                 image = image.resize((97, 97))
                 img.paste(image, (x - 100, y - 30))
 
-            draw.text((x + 15, y - offset), character.name, character.get_class_color(), font=font)
+            draw.text(
+                (x + 15, y - offset),
+                character.name.split("-")[0],
+                character.get_class_color(),
+                font=font,
+            )
             draw.text(
                 (x + 375, y - offset),
                 f"{str(round(character.item_level))}",
@@ -265,17 +276,17 @@ class MDI(commands.Cog):
 
     @staticmethod
     def _get_ilvl_color(ilvl: int) -> str:
-        if ilvl >= 485:
+        if ilvl >= 610:
             return "#f16960"
-        elif ilvl >= 482:
+        elif ilvl >= 609:
             return "#FF69B4"
-        elif ilvl >= 479:
+        elif ilvl >= 606:
             return "#FFA500"
-        elif ilvl >= 474:
+        elif ilvl >= 603:
             return "#b040c2"
-        elif ilvl >= 469:
+        elif ilvl >= 601:
             return "#445bc2"
-        elif ilvl >= 464:
+        elif ilvl >= 600:
             return "#00ff1a"
         else:
             return "#FFFFFF"
