@@ -108,7 +108,11 @@ class MDI(commands.Cog):
                 await ParticipantCharacter.create(player, wow) for player in signups
             ]
         headers = ["# Ime", "Klasa", "Ilvl", "Score"]
-        rows: List[List[str]] = [character.to_row() for character in characters]
+        rows: List[List[str]] = []
+        for i, character in enumerate(characters):
+            rows.append(character.to_row())
+            if i % 4 == 0:
+                rows.append([f"Team {i // 4}"])
         table = tabulate(rows, headers=headers, tablefmt="plain", disable_numparse=True)
         desc = "Draft je <t:1731524400:R>\nMDI počinje <t:1732734000:R>\n"
         desc += box(table, lang="md")
