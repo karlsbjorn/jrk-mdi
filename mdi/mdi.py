@@ -26,7 +26,7 @@ TEAMS = [  # Tank, Healer, DPS, DPS, DPS
     ["Ujoo", "Palciic", "Cokoladica", "Djubresa", "Shlogy-Kazzak"],
     ["Guzdian", "Skusic-tarren-mill", "Thasko", "Riggmage", "Meinwille"],
     ["Oguun", "Eihime-defias-brotherhood", "Vortas-Sylvanas", "Lanxy", "Veriel-tarren-mill"],
-    ["Iaretank", "Zugicokoloko", "Vrac", "Kruska", "Exorcist"],
+    ["Iaretank", "Zugicokoloko", "Avant", "Kruska", "Beyonce"],
 ]
 
 
