@@ -18,7 +18,7 @@ from tabulate import tabulate
 from aiowowapi import WowApi
 from mdi.participant_character import ParticipantCharacter
 
-log = logging.getLogger("red.karlo-cogs.wowtools")
+log = logging.getLogger("red.karlo-cogs.mdi")
 _ = Translator("MDI", __file__)
 
 TEAMS = [  # Tank, Healer, DPS, DPS, DPS
@@ -79,8 +79,8 @@ class MDI(commands.Cog):
                     signups_channel,
                     signups_message,
                 )
-            await self.config.guild(guild).mdi_channel.clear()
-            await self.config.guild(guild).mdi_message.clear()
+            await self.config.guild(guild).signupsboard_channel.clear()
+            await self.config.guild(guild).signupsboard_message.clear()
             await ctx.send(_("Signups message cleared."))
             return
         if signups_message:
