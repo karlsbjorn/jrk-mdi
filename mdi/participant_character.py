@@ -22,7 +22,7 @@ class ParticipantCharacter:
             player_data = await rio.get_character_profile(
                 "eu",
                 "ragnaros" if "-" not in name else "-".join(name.split("-")[1:]),
-                name.split("-")[0],
+                name.split("-")[0].capitalize(),
                 ["mythic_plus_scores_by_season:current"],
             )
         blizz_profile = await wow_api.Retail.Profile.get_character_profile_summary(

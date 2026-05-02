@@ -22,11 +22,17 @@ log = logging.getLogger("red.karlo-cogs.mdi")
 _ = Translator("MDI", __file__)
 
 TEAMS = [  # Tank, Healer, DPS, DPS, DPS
-    ["Jegger", "Truljator", "Yeezus", "Wranjes-ravencrest", "Locketina"],
-    ["Ujoo", "Palciic", "Cokoladica", "Djubresa", "Shlogy-Kazzak"],
-    ["Guzdian", "Skusic-tarren-mill", "Thasko", "Riggmage", "Meinwille"],
-    ["Oguun", "Eihime-defias-brotherhood", "Vortas-Sylvanas", "Lanxy", "Veriel-tarren-mill"],
-    ["Iaretank", "Zugicokoloko", "Avant", "Kruska", "Beyonce"],
+    [
+        "Exu-Ragnaros",
+        "Boldone-ragnaros",
+        "Buddle-Ragnaros",
+        "Venera-Ravencrest",
+        "peesko-ragnaros",
+    ],
+    ["Zmajetina-Ragnaros", "Drfrost-Ragnaros", "Staraslapa-Ragnaros", "Shasko-Ragnaros", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
 ]
 
 
@@ -276,17 +282,17 @@ class MDI(commands.Cog):
 
     @staticmethod
     def _get_ilvl_color(ilvl: int) -> str:
-        if ilvl >= 610:
+        if ilvl >= 263:
             return "#f16960"
-        elif ilvl >= 609:
+        elif ilvl >= 261:
             return "#FF69B4"
-        elif ilvl >= 606:
+        elif ilvl >= 259:
             return "#FFA500"
-        elif ilvl >= 603:
+        elif ilvl >= 257:
             return "#b040c2"
-        elif ilvl >= 601:
+        elif ilvl >= 255:
             return "#445bc2"
-        elif ilvl >= 600:
+        elif ilvl >= 253:
             return "#00ff1a"
         else:
             return "#FFFFFF"
