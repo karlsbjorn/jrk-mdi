@@ -117,7 +117,7 @@ class MDI(commands.Cog):
         headers = ["# Ime", "Klasa", "Ilvl", "Score"]
         rows: List[List[str]] = [character.to_row() for character in characters]
         table = tabulate(rows, headers=headers, tablefmt="plain", disable_numparse=True)
-        desc = "Draft je <t:1731524400:R>\nMDI počinje <t:1732734000:R>\n"
+        desc = "Draft je soon™️\nMDI počinje soon™️\n"
         desc += box(table, lang="md")
         desc += f"\nZadnji put ažurirano <t:{int(datetime.now(timezone.utc).timestamp())}:R>"
         embed = discord.Embed(color=color, title="6. MDI Prijave", description=desc)
@@ -241,8 +241,8 @@ class MDI(commands.Cog):
         y: int,
     ):
         offset = 7
-        draw.text((x + 375, y - offset - 100), str(self.get_team_avg_ilvl(team)), font=font)
-        draw.text((x + 540, y - offset - 100), str(self.get_team_avg_score(team)), font=font)
+        # draw.text((x + 375, y - offset - 100), str(self.get_team_avg_ilvl(team)), font=font)
+        # draw.text((x + 540, y - offset - 100), str(self.get_team_avg_score(team)), font=font)
         for character in team:
             if character is None:
                 draw.text((x + 15, y - offset), "???", font=font)
